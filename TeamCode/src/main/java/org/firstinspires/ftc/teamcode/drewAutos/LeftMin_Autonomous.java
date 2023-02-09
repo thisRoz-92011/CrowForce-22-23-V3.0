@@ -1,21 +1,28 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.drewAutos;
 
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "RightMin_Autonomous", group = "Drew's Autos" )
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "LeftMin_Autonomous", group = "Drew's Auto" )
+@Disabled
 
-public class RightMin_Autonomous extends LinearOpMode {
+
+public class LeftMin_Autonomous extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor frontleftDrive = null;
     private DcMotor frontrightDrive = null;
     private DcMotor backleftDrive = null;
     private DcMotor backrightDrive = null;
-
+    private DcMotor middleslideDrive = null;
+    private Servo rightgripperDrive = null;
+    private Servo leftgripperDrive = null;
     @Override
+
     public void runOpMode() throws InterruptedException{
 
         telemetry.addData("Status", "Initialized");
@@ -24,23 +31,24 @@ public class RightMin_Autonomous extends LinearOpMode {
         frontrightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
         backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
         backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
-        frontleftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontrightDrive.setDirection(DcMotor.Direction.FORWARD);
-        backleftDrive.setDirection(DcMotor.Direction.REVERSE);
-        backrightDrive.setDirection(DcMotor.Direction.FORWARD);
+        middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
+        frontleftDrive.setDirection(DcMotor.Direction.FORWARD);
+        frontrightDrive.setDirection(DcMotor.Direction.REVERSE);
+        backleftDrive.setDirection(DcMotor.Direction.FORWARD);
+        backrightDrive.setDirection(DcMotor.Direction.REVERSE);
+        middleslideDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         waitForStart();
 
-        double tile = 300;
+        double tile = 1000;
 
+        moveSimpleEnc(1, .5, 1);
         ElapsedTime matchTime = new ElapsedTime();
         telemetry.addData("Run Time:", matchTime);
-        //moveSimpleEnc(1,0.3,tile);
-        moveSimple(30,.5);
+
+        //moveSimple(30,1);
+        //moveEncoders(90,0.5,1000);
         //moveEncoders(90,30,1000);
-        //moveEncoders(90,30,1000)
-        // moveSimpleEnc(1,0.3, 2*tile);
-        //turnSimple(1,0.2,100);
 
         telemetry.update();
 
@@ -53,7 +61,59 @@ public class RightMin_Autonomous extends LinearOpMode {
     }
 
     public void moveEncoders(double angle, double speed, double distance) {
-        angle = angle*Math.PI/180;
+        frontleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        double theta = -angle + 90;
+        //theta = angle;
+        theta = theta + 45;
+        theta = theta*Math.PI/180;
+
+        double y_distance = Math.sin(theta)*distance;
+        double x_distance = Math.cos(theta)*distance;
+        double y_speed = Math.sin(theta)*speed;
+        double x_speed = Math.cos(theta)*speed;
+        int y_directionCoefficient = 1;
+        int x_directionCoefficient = 1;
+        if (y_distance < 0) {y_directionCoefficient = -1;}
+        if (x_distance < 0) {x_directionCoefficient = -1;}
+        double lFpos = y_directionCoefficient*frontleftDrive.getCurrentPosition();
+        double lBpos = x_directionCoefficient*backleftDrive.getCurrentPosition();
+        double rFpos = x_directionCoefficient*frontrightDrive.getCurrentPosition();
+        double rBpos = y_directionCoefficient*backrightDrive.getCurrentPosition();
+        telemetry.addData("frontRight",frontrightDrive.getCurrentPosition());
+        telemetry.addData("y_distance: ", y_distance);
+        telemetry.addData("x_distance: ", x_distance);
+        while (lFpos < y_distance && lBpos<x_distance && rBpos < y_distance && rFpos < x_distance ) {
+            frontleftDrive.setPower(y_speed);
+            frontrightDrive.setPower(x_speed);
+            backleftDrive.setPower(x_speed);
+            backrightDrive.setPower(y_speed);
+             lFpos = y_directionCoefficient*frontleftDrive.getCurrentPosition();
+           lBpos = x_directionCoefficient*backleftDrive.getCurrentPosition();
+           rFpos = x_directionCoefficient*frontrightDrive.getCurrentPosition();
+           rBpos = y_directionCoefficient*backrightDrive.getCurrentPosition();
+            telemetry.update();
+
+        }
+
+        if (lFpos >= y_distance && lBpos >= x_distance && rBpos >= y_distance && rFpos >= x_distance ) {
+            frontleftDrive.setPower(y_speed);
+            frontrightDrive.setPower(x_speed);
+            backleftDrive.setPower(x_speed);
+            backrightDrive.setPower(y_speed);
+        }
+
+
+
+
+
+        /*angle = angle*Math.PI/180;
         frontleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -77,7 +137,7 @@ public class RightMin_Autonomous extends LinearOpMode {
             backleftDrive.setPower(0);
             backleftDrive.setPower(0);
         }
-
+*/
     }
 
     public void turnEncoders(double angle, double speed) {
@@ -151,7 +211,24 @@ public class RightMin_Autonomous extends LinearOpMode {
             backrightDrive.setPower(direction);
         }
     }
+    public void setSlider(double level) {
+        //middleslideDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //middleslideDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        double position = 0;
+        if (level == 1) {position = 70;}
+        if (level == 2) {position = 2000;}
+        if (level == 3) {position = 4000;}
+        if (middleslideDrive.getCurrentPosition() < position) {
+            while (middleslideDrive.getCurrentPosition()< position) {middleslideDrive.setPower(0.3);}
+
+        }
+        if (middleslideDrive.getCurrentPosition() > position) {
+            while (middleslideDrive.getCurrentPosition()> position) {middleslideDrive.setPower(-0.3);}
+        }
+
+    }
     public void moveSimpleEnc(double direction, double speed, double distance) {
+        distance = distance*1745.45455;
         frontleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -160,27 +237,31 @@ public class RightMin_Autonomous extends LinearOpMode {
         frontrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontleftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontrightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backleftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backrightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         boolean backwards = false;
         if (direction < 0) {
             backwards = true;
         }
 
 
-        if (backwards = true) {
+        if (backwards == true) {
             while (frontleftDrive.getCurrentPosition() > -distance) {
                 frontleftDrive.setPower(-speed);
-                backrightDrive.setPower(speed);
-                backleftDrive.setPower(speed);
+                backrightDrive.setPower(-speed);
+                backleftDrive.setPower(-speed);
                 frontrightDrive.setPower(-speed);
             }
 
         }
 
-        if (backwards = false) {
+        if (backwards == false) {
             while (frontleftDrive.getCurrentPosition() < distance) {
                 frontleftDrive.setPower(speed);
-                backrightDrive.setPower(-speed);
-                backleftDrive.setPower(-speed);
+                backrightDrive.setPower(speed);
+                backleftDrive.setPower(speed);
                 frontrightDrive.setPower(speed);
             }
 
@@ -196,7 +277,9 @@ public class RightMin_Autonomous extends LinearOpMode {
         backleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         boolean left = false;
-        if (direction < 0) {left = true;}
+        if (direction < 0) {
+            left = true;
+        }
 
         if (left = true) {
             while (frontleftDrive.getCurrentPosition() > -distance) {
@@ -206,15 +289,6 @@ public class RightMin_Autonomous extends LinearOpMode {
                 frontrightDrive.setPower(-speed);
             }
 
-        }
-
-        if(left = false) {
-            while (frontleftDrive.getCurrentPosition() < distance) {
-                frontleftDrive.setPower(speed);
-                backrightDrive.setPower(-speed);
-                backleftDrive.setPower(-speed);
-                frontrightDrive.setPower(speed);
-            }
         }
     }
     public void turnSimple(double direction, double speed, double distance) {
@@ -249,4 +323,3 @@ public class RightMin_Autonomous extends LinearOpMode {
         }
     }
 }
-

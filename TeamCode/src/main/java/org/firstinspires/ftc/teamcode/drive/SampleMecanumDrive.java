@@ -25,6 +25,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
@@ -71,7 +72,8 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     private TrajectoryFollower follower;
 
-    private DcMotorEx leftFront, leftRear, rightRear, rightFront;
+    private DcMotorEx leftFront, leftRear, rightRear, rightFront, middleSlides;
+    private Servo leftGripper, rightGripper;
     private List<DcMotorEx> motors;
 
     private IMU imu;
@@ -104,6 +106,9 @@ public class SampleMecanumDrive extends MecanumDrive {
         leftRear = hardwareMap.get(DcMotorEx.class, "back_left_drive");
         rightRear = hardwareMap.get(DcMotorEx.class, "back_right_drive");
         rightFront = hardwareMap.get(DcMotorEx.class, "front_right_drive");
+        middleSlides = hardwareMap.get(DcMotorEx.class, "middle_slides_drive");
+        rightGripper = hardwareMap.get(Servo.class, "right_gripper_drive");
+        leftGripper = hardwareMap.get(Servo.class, "left_gripper_drive");
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
@@ -296,5 +301,26 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
+    }
+
+
+
+    public void setServo(double position) {
+        position = position * 1;
+        if (position == 1) {
+            while (leftGripper.getPosition() != .505) {
+                leftGripper.setPosition(.505);
+                rightGripper.setPosition(.35);
+            }
+
+        }
+        if (position == 0) {
+            while (leftGripper.getPosition() != .77) {
+                leftGripper.setPosition(.77);
+                rightGripper.setPosition(.12);
+            }
+
+        }
+
     }
 }

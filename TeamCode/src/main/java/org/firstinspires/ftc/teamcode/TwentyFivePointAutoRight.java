@@ -22,9 +22,9 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import java.util.ArrayList;
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "ThirtyPointAutoRight", group = "OpenCV Autos" )
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "TwentyFivePointAutoRight", group = "OpenCV Autos" )
 
-public class ThirtyPointAutoRight extends LinearOpMode {
+public class TwentyFivePointAutoRight extends LinearOpMode {
 
     private final ElapsedTime runtime = new ElapsedTime();
     public DcMotor middleSlideDrive = null;
@@ -136,24 +136,6 @@ public class ThirtyPointAutoRight extends LinearOpMode {
                     setSlider(1,2);
                 })
                 .lineTo(new Vector2d(-36,-12))
-                .lineTo(new Vector2d(-24,-12))
-                .addDisplacementMarker(() -> {
-                    setSlider(1,7);
-                })
-                .lineTo(new Vector2d(-24,-10))
-                .addDisplacementMarker(() -> {
-                    setServo(0);
-                })
-                .waitSeconds(.2)
-                .lineTo(new Vector2d(-24,-12))
-                .addDisplacementMarker(() -> {
-                    setSlider(1,2);
-                })
-                .lineToLinearHeading(new Pose2d(-60, -12, Math.toRadians(180)))
-                .addDisplacementMarker(() -> {
-                    setServo(1);
-                })
-                .lineToLinearHeading(new Pose2d(-36, -12, Math.toRadians(-90)))
                 .lineTo(new Vector2d(-24,-12))
                 .addDisplacementMarker(() -> {
                     setSlider(1,7);

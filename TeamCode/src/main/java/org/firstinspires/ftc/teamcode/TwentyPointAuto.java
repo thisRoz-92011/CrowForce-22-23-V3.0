@@ -106,7 +106,6 @@ public class TwentyPointAuto extends LinearOpMode {
                 )
         );
 
-
         //Camera
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         OpenCvCamera camera = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
@@ -130,23 +129,23 @@ public class TwentyPointAuto extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Pose2d startPose = new Pose2d(-36, -63, Math.toRadians(90));
-        Pose2d generalPose = new Pose2d(-36, -36, Math.toRadians(90));
 
         drive.setPoseEstimate(startPose);
-        TrajectorySequence GeneralStart = drive.trajectorySequenceBuilder(startPose)
+        TrajectorySequence Tag1Ending = drive.trajectorySequenceBuilder(startPose)
                 .lineTo(new Vector2d(-36,-36))
-                .build();
-
-        drive.setPoseEstimate(generalPose);
-        Trajectory Tag1 = drive.trajectoryBuilder(generalPose)
                 .strafeLeft(24)
                 .build();
 
-        drive.setPoseEstimate(generalPose);
-        Trajectory Tag3 = drive.trajectoryBuilder(generalPose)
-                .strafeRight(24)
+        drive.setPoseEstimate(startPose);
+        TrajectorySequence Tag2Ending = drive.trajectorySequenceBuilder(startPose)
+                .lineTo(new Vector2d(-36,-36))
                 .build();
 
+        drive.setPoseEstimate(startPose);
+        TrajectorySequence Tag3Ending = drive.trajectorySequenceBuilder(startPose)
+                .lineTo(new Vector2d(-36,-36))
+                .strafeRight(24)
+                .build();
 
         while (!isStarted() && !isStopRequested()) {
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
@@ -194,58 +193,32 @@ public class TwentyPointAuto extends LinearOpMode {
             telemetry.update();
 
             if (tagPosition == 1) {
-                frontleftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
-                frontrightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
-                backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
-                backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
-                middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
-                rightgripperDrive = hardwareMap.get(Servo.class, "right_gripper_drive");
-                leftgripperDrive = hardwareMap.get(Servo.class, "left_gripper_drive");
-                middleSlideDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-                drive.followTrajectorySequence(GeneralStart);
-                drive.followTrajectory(Tag1);
-
+                drive.followTrajectorySequence(Tag1Ending);
 
             }
 
             if (tagPosition == 2) {
-                frontleftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
-                frontrightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
-                backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
-                backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
-                middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
-                rightgripperDrive = hardwareMap.get(Servo.class, "right_gripper_drive");
-                leftgripperDrive = hardwareMap.get(Servo.class, "left_gripper_drive");
-                middleSlideDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-                drive.followTrajectorySequence(GeneralStart);
+                drive.followTrajectorySequence(Tag2Ending);
+
             }
 
             if (tagPosition == 3) {
-                frontleftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
-                frontrightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
-                backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
-                backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
-                middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
-                rightgripperDrive = hardwareMap.get(Servo.class, "right_gripper_drive");
-                leftgripperDrive = hardwareMap.get(Servo.class, "left_gripper_drive");
-                middleSlideDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-                drive.followTrajectorySequence(GeneralStart);
-                drive.followTrajectory(Tag3);
+                drive.followTrajectorySequence(Tag3Ending);
+
             }
 
         } else {
             telemetry.addLine("No tag available, it was never seen during the init loop :(");
             telemetry.addLine("Backup plan INITIATED :)");
             while (!hasRun) {
+
             }
             telemetry.update();
         }
     }
-
-
     public void telemetry() {
         telemetry.addData("Run Time", runtime.toString());
         telemetry.addData("Front Right Encoder", frontrightDrive.getCurrentPosition());
@@ -255,8 +228,4 @@ public class TwentyPointAuto extends LinearOpMode {
         telemetry.addData("IMU Z Angle", imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
         telemetry.update();
     }
-    public void turnGyro(double angle, double speed) {
-
-    }
-
 }

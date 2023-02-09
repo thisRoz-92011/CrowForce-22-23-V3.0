@@ -705,7 +705,9 @@ public class TrajectorySequenceBuilder {
         return displacementToTime(sequenceSegments, closestPoint.thisPathDisplacement);
     }
 
+
     private interface AddPathCallback {
         void run();
     }
+
 }

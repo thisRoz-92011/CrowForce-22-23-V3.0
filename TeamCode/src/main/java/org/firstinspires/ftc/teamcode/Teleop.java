@@ -165,6 +165,8 @@ public class Teleop extends LinearOpMode {
             else if (xPress1) { fieldCentric = true; }
             else if (bPress1) { fieldCentric = false; }
 
+
+            //Field Centric on/off with respective code
             if (!fieldCentric) {
                 vertical = -gamepad1.left_stick_y;
                 horizontal = gamepad1.left_stick_x;
@@ -175,18 +177,6 @@ public class Teleop extends LinearOpMode {
                 frontleftDrive.setPower(power * (-pivot + (-vertical - horizontal)));
                 backleftDrive.setPower(power * (-pivot + (-vertical + horizontal)));
 
-                if (lBPress1 && rBPress1) {
-                    frontleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    frontrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    backleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    backrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    middleslideDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    frontleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    frontrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    backleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    backrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    middleslideDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
 
             } else if (fieldCentric) {
                 robotDegree = getAngle();
@@ -220,7 +210,11 @@ public class Teleop extends LinearOpMode {
         telemetry.addData("Front Left Encoder", frontleftDrive.getCurrentPosition());
         telemetry.addData("Back Right Encoder", backrightDrive.getCurrentPosition());
         telemetry.addData("Back Left Encoder", backleftDrive.getCurrentPosition());
-            telemetry.addData("Middle Slides Encoder", middleslideDrive.getCurrentPosition());
+        telemetry.addData("frontright", (power * (driveTurn + (-gamepadYControl + gamepadXControl))));
+        telemetry.addData("backright", (power * (driveTurn + (-gamepadYControl - gamepadXControl))));
+        telemetry.addData("frontleft", (power * (-driveTurn + (-gamepadYControl - gamepadXControl))));
+        telemetry.addData("backleft", (power * (-driveTurn + (-gamepadYControl + gamepadXControl))));
+        telemetry.addData("Middle Slides Encoder", middleslideDrive.getCurrentPosition());
         telemetry.addData("IMU Z Angle", imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
         telemetry.addData("robo degree", robotDegree);
         telemetry.addData("X", gamepadXControl);

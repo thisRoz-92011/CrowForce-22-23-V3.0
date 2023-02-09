@@ -22,9 +22,9 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import java.util.ArrayList;
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "ThirtyPointAutoRight", group = "OpenCV Autos" )
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "TwentyFivePointAutoLeft", group = "OpenCV Autos" )
 
-public class ThirtyPointAutoRight extends LinearOpMode {
+public class TwentyFivePointAutoLeft extends LinearOpMode {
 
     private final ElapsedTime runtime = new ElapsedTime();
     public DcMotor middleSlideDrive = null;
@@ -128,57 +128,39 @@ public class ThirtyPointAutoRight extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Pose2d startPose = new Pose2d(-36, -63, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(36, -63, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
 
         TrajectorySequence GeneralMovement = drive.trajectorySequenceBuilder(startPose)
                 .addDisplacementMarker(() -> {
                     setSlider(1,2);
                 })
-                .lineTo(new Vector2d(-36,-12))
-                .lineTo(new Vector2d(-24,-12))
+                .lineTo(new Vector2d(36,-12))
+                .lineTo(new Vector2d(24,-12))
                 .addDisplacementMarker(() -> {
                     setSlider(1,7);
                 })
-                .lineTo(new Vector2d(-24,-10))
+                .lineTo(new Vector2d(24,-10))
                 .addDisplacementMarker(() -> {
                     setServo(0);
                 })
                 .waitSeconds(.2)
-                .lineTo(new Vector2d(-24,-12))
+                .lineTo(new Vector2d(24,-12))
                 .addDisplacementMarker(() -> {
                     setSlider(1,2);
                 })
-                .lineToLinearHeading(new Pose2d(-60, -12, Math.toRadians(180)))
-                .addDisplacementMarker(() -> {
-                    setServo(1);
-                })
-                .lineToLinearHeading(new Pose2d(-36, -12, Math.toRadians(-90)))
-                .lineTo(new Vector2d(-24,-12))
-                .addDisplacementMarker(() -> {
-                    setSlider(1,7);
-                })
-                .lineTo(new Vector2d(-24,-10))
-                .addDisplacementMarker(() -> {
-                    setServo(0);
-                })
-                .waitSeconds(.2)
-                .lineTo(new Vector2d(-24,-12))
-                .addDisplacementMarker(() -> {
-                    setSlider(1,2);
-                })
-                .lineTo(new Vector2d(-36,-12))
-                .lineTo(new Vector2d(-36,-36))
+                .lineTo(new Vector2d(36,-12))
+                .lineTo(new Vector2d(36,-36))
                 .build();
 
-        TrajectorySequence Tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(-36,-36,Math.toRadians(90)))
-                .lineTo(new Vector2d(-60,-36))
+        TrajectorySequence Tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(36,-36,Math.toRadians(90)))
+                .lineTo(new Vector2d(12,-36))
                 .build();
 
-
-        TrajectorySequence Tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(-36,-36,Math.toRadians(90)))
-                .lineTo(new Vector2d(-12,-36))
+        TrajectorySequence Tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(36,-36,Math.toRadians(90)))
+                .lineTo(new Vector2d(60,-36))
                 .build();
+
 
         while (!isStarted() && !isStopRequested()) {
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
