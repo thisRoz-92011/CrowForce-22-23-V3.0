@@ -132,18 +132,27 @@ public class TwentyPointAuto extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
         TrajectorySequence Tag1Ending = drive.trajectorySequenceBuilder(startPose)
-                .lineTo(new Vector2d(-36,-36))
+                .addDisplacementMarker(() -> {
+                    setServo(1,0);
+                })
+                .lineTo(new Vector2d(-36,-38))
                 .strafeLeft(24)
                 .build();
 
         drive.setPoseEstimate(startPose);
         TrajectorySequence Tag2Ending = drive.trajectorySequenceBuilder(startPose)
+                .addDisplacementMarker(() -> {
+                    setServo(1,0);
+                })
                 .lineTo(new Vector2d(-36,-36))
                 .build();
 
         drive.setPoseEstimate(startPose);
         TrajectorySequence Tag3Ending = drive.trajectorySequenceBuilder(startPose)
-                .lineTo(new Vector2d(-36,-36))
+                .addDisplacementMarker(() -> {
+                    setServo(1,0);
+                })
+                .lineTo(new Vector2d(-36,-38))
                 .strafeRight(24)
                 .build();
 
@@ -217,6 +226,16 @@ public class TwentyPointAuto extends LinearOpMode {
 
             }
             telemetry.update();
+        }
+    }
+    public void setServo(double position, int sleep) {
+        position = position * 1;
+        if (position == 1) {
+            while (leftgripperDrive.getPosition() != .505) {
+                leftgripperDrive.setPosition(.505);
+                rightgripperDrive.setPosition(.35);
+            }
+
         }
     }
     public void telemetry() {

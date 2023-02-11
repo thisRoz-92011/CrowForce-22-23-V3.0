@@ -27,13 +27,12 @@ import java.util.ArrayList;
 public class ThirtyPointAutoRight extends LinearOpMode {
 
     private final ElapsedTime runtime = new ElapsedTime();
-    public DcMotor middleSlideDrive = null;
+    public DcMotor middleslideDrive = null;
     private boolean hasRun = false;
     public DcMotor frontleftDrive = null;
     public DcMotor frontrightDrive = null;
     public DcMotor backleftDrive = null;
     public DcMotor backrightDrive = null;
-    public DcMotor middleslideDrive = null;
     public Servo rightgripperDrive = null;
     public Servo leftgripperDrive = null;
 
@@ -71,7 +70,7 @@ public class ThirtyPointAutoRight extends LinearOpMode {
         frontrightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
         backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
         backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
-        middleSlideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
+        middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
 
         rightgripperDrive = hardwareMap.get(Servo.class, "right_gripper_drive");
         leftgripperDrive = hardwareMap.get(Servo.class, "left_gripper_drive");
@@ -80,19 +79,19 @@ public class ThirtyPointAutoRight extends LinearOpMode {
         frontrightDrive.setDirection(DcMotor.Direction.FORWARD);
         backleftDrive.setDirection(DcMotor.Direction.REVERSE);
         backrightDrive.setDirection(DcMotor.Direction.FORWARD);
-        middleSlideDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        middleslideDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         frontleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        middleSlideDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        middleslideDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         frontleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        middleSlideDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        middleslideDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //imu
         imu = hardwareMap.get(IMU.class, "imu");
@@ -128,56 +127,62 @@ public class ThirtyPointAutoRight extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Pose2d startPose = new Pose2d(-36, -63, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(36, -63, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
+
+        frontleftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
+        frontrightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
+        backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
+        backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+        middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
 
         TrajectorySequence GeneralMovement = drive.trajectorySequenceBuilder(startPose)
                 .addDisplacementMarker(() -> {
                     setSlider(1,2);
                 })
-                .lineTo(new Vector2d(-36,-12))
-                .lineTo(new Vector2d(-24,-12))
+                .lineTo(new Vector2d(36,-12))
+                .lineTo(new Vector2d(24,-12))
                 .addDisplacementMarker(() -> {
                     setSlider(1,7);
                 })
-                .lineTo(new Vector2d(-24,-10))
+                .lineTo(new Vector2d(24,-10))
                 .addDisplacementMarker(() -> {
                     setServo(0);
                 })
                 .waitSeconds(.2)
-                .lineTo(new Vector2d(-24,-12))
+                .lineTo(new Vector2d(24,-12))
                 .addDisplacementMarker(() -> {
                     setSlider(1,2);
                 })
-                .lineToLinearHeading(new Pose2d(-60, -12, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(180)))
                 .addDisplacementMarker(() -> {
                     setServo(1);
                 })
-                .lineToLinearHeading(new Pose2d(-36, -12, Math.toRadians(-90)))
-                .lineTo(new Vector2d(-24,-12))
+                .lineToLinearHeading(new Pose2d(36, -12, Math.toRadians(-90)))
+                .lineTo(new Vector2d(24,-12))
                 .addDisplacementMarker(() -> {
                     setSlider(1,7);
                 })
-                .lineTo(new Vector2d(-24,-10))
+                .lineTo(new Vector2d(24,-10))
                 .addDisplacementMarker(() -> {
                     setServo(0);
                 })
                 .waitSeconds(.2)
-                .lineTo(new Vector2d(-24,-12))
+                .lineTo(new Vector2d(24,-12))
                 .addDisplacementMarker(() -> {
                     setSlider(1,2);
                 })
-                .lineTo(new Vector2d(-36,-12))
-                .lineTo(new Vector2d(-36,-36))
-                .build();
-
-        TrajectorySequence Tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(-36,-36,Math.toRadians(90)))
-                .lineTo(new Vector2d(-60,-36))
+                .lineTo(new Vector2d(36,-12))
+                .lineTo(new Vector2d(36,-36))
                 .build();
 
 
-        TrajectorySequence Tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(-36,-36,Math.toRadians(90)))
-                .lineTo(new Vector2d(-12,-36))
+        TrajectorySequence Tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(36,-36,Math.toRadians(90)))
+                .lineTo(new Vector2d(12,-36))
+                .build();
+
+        TrajectorySequence Tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(36,-36,Math.toRadians(90)))
+                .lineTo(new Vector2d(12,-36))
                 .build();
 
         while (!isStarted() && !isStopRequested()) {
@@ -226,6 +231,11 @@ public class ThirtyPointAutoRight extends LinearOpMode {
             telemetry.update();
 
             if (tagPosition == 1) {
+                frontleftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
+                frontrightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
+                backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
+                backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+                middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
 
                 drive.followTrajectorySequence(GeneralMovement);
 
@@ -234,12 +244,22 @@ public class ThirtyPointAutoRight extends LinearOpMode {
             }
 
             if (tagPosition == 2) {
+                frontleftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
+                frontrightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
+                backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
+                backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+                middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
 
                 drive.followTrajectorySequence(GeneralMovement);
 
             }
 
             if (tagPosition == 3) {
+                frontleftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
+                frontrightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
+                backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
+                backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+                middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
 
                 drive.followTrajectorySequence(GeneralMovement);
                 drive.followTrajectorySequence(Tag3Ending);
@@ -257,6 +277,11 @@ public class ThirtyPointAutoRight extends LinearOpMode {
     }
 
     public void setSlider(double speed, double level) {
+        frontleftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
+        frontrightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
+        backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
+        backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+        middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
         double position = 0;
         if (level == 0) {position = 0;}
         if (level == 1) {position = 200;}
@@ -269,12 +294,14 @@ public class ThirtyPointAutoRight extends LinearOpMode {
 
 
         if (middleslideDrive.getCurrentPosition() < position) {
-            while (middleslideDrive.getCurrentPosition()< position) {middleslideDrive.setPower(-speed);}
+            while (middleslideDrive.getCurrentPosition()< position) {
+                middleslideDrive.setPower(-speed);}
             telemetry();
 
         }
         if (middleslideDrive.getCurrentPosition() > position) {
-            while (middleslideDrive.getCurrentPosition()> position) {middleslideDrive.setPower(speed);}
+            while (middleslideDrive.getCurrentPosition()> position) {
+                middleslideDrive.setPower(speed);}
             telemetry();
         }
         middleslideDrive.setPower(0);

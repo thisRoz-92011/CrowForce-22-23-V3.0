@@ -128,39 +128,39 @@ public class TwentyFivePointAutoRight extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Pose2d startPose = new Pose2d(-36, -63, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(36, -63, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
 
         TrajectorySequence GeneralMovement = drive.trajectorySequenceBuilder(startPose)
                 .addDisplacementMarker(() -> {
                     setSlider(1,2);
                 })
-                .lineTo(new Vector2d(-36,-12))
-                .lineTo(new Vector2d(-24,-12))
+                .lineTo(new Vector2d(36,-12))
+                .lineTo(new Vector2d(24,-12))
                 .addDisplacementMarker(() -> {
                     setSlider(1,7);
                 })
-                .lineTo(new Vector2d(-24,-10))
+                .lineTo(new Vector2d(24,-10))
                 .addDisplacementMarker(() -> {
                     setServo(0);
                 })
                 .waitSeconds(.2)
-                .lineTo(new Vector2d(-24,-12))
+                .lineTo(new Vector2d(24,-12))
                 .addDisplacementMarker(() -> {
                     setSlider(1,2);
                 })
-                .lineTo(new Vector2d(-36,-12))
-                .lineTo(new Vector2d(-36,-36))
+                .lineTo(new Vector2d(36,-12))
+                .lineTo(new Vector2d(36,-36))
                 .build();
 
-        TrajectorySequence Tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(-36,-36,Math.toRadians(90)))
-                .lineTo(new Vector2d(-60,-36))
+        TrajectorySequence Tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(36,-36,Math.toRadians(90)))
+                .lineTo(new Vector2d(12,-36))
                 .build();
 
-
-        TrajectorySequence Tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(-36,-36,Math.toRadians(90)))
-                .lineTo(new Vector2d(-12,-36))
+        TrajectorySequence Tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(36,-36,Math.toRadians(90)))
+                .lineTo(new Vector2d(60,-36))
                 .build();
+
 
         while (!isStarted() && !isStopRequested()) {
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
