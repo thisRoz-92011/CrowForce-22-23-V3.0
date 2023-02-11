@@ -133,19 +133,17 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
 
 
         TrajectorySequence GeneralMovement = drive.trajectorySequenceBuilder(startPose)
+                .addTemporalMarker(3, () -> {
+                    setSliderUp(1,7,250);
+                })
                 .addDisplacementMarker(() -> {
                     setServo(1,500);
                 })
 
                 .lineTo(new Vector2d(-36,-36))
-                .lineTo(new Vector2d(0,-36))
-                .addDisplacementMarker(() -> {
-                    setSliderUp(1,7,250);
-                })
-                .waitSeconds(.5)
-                .addDisplacementMarker(() -> {
-                    moveSimple(.5,0.07);
-                })
+
+                .lineTo(new Vector2d(0,-33))
+
                 //.lineTo(new Vector2d(0,-30))
                 .addDisplacementMarker(() -> {
                     setSliderUp(1,4,250);
