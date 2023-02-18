@@ -4,6 +4,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -12,10 +13,11 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp(name="Teleop", group="Linear Opmode")
+@TeleOp(name="TeleopFieldCentric", group="Linear Opmode")
 
-public class Teleop extends LinearOpMode {
+public class TeleopFieldCentric extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -26,6 +28,8 @@ public class Teleop extends LinearOpMode {
     private DcMotor middleslideDrive = null;
     private Servo rightgripperDrive = null;
     private Servo leftgripperDrive = null;
+
+    private DistanceSensor distanceSensor = null;
     public IMU imu;
 
 
@@ -43,6 +47,7 @@ public class Teleop extends LinearOpMode {
         middleslideDrive= hardwareMap.get(DcMotor.class, "middle_slides_drive");
         rightgripperDrive = hardwareMap.get(Servo.class, "right_gripper_drive");
         leftgripperDrive = hardwareMap.get(Servo.class, "left_gripper_drive");
+        distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
 
         // Define Boolean Buttons
         boolean aPress1;
@@ -51,6 +56,10 @@ public class Teleop extends LinearOpMode {
         boolean yPress1;
         boolean dpad_up2 = false;
         boolean dpad_down2 = false;
+        boolean dpad_up1 = false;
+        boolean dpad_down1 = false;
+        boolean dpad_left1 = false;
+        boolean dpad_right1 = false;
         boolean rBPress2;
         boolean lBPress2;
         boolean rBPress1;
@@ -161,67 +170,42 @@ public class Teleop extends LinearOpMode {
             // Moves robot by using joystick position
             // A and B button changes power
             if (yPress1) {power = 1; }
-            else if (aPress1) { power = .5; }
-            else if (xPress1) { fieldCentric = true; }
-            else if (bPress1) { fieldCentric = false; }
+            else if (aPress1) { power = .3; }
 
+            power = (1/(distanceSensor.getDistance(DistanceUnit.CM)));
 
-            //Field Centric on/off with respective code
-            if (!fieldCentric) {
-                vertical = -gamepad1.left_stick_y;
-                horizontal = gamepad1.left_stick_x;
-                pivot = gamepad1.right_stick_x;
+            //Field Centric
+            robotDegree = getAngle();
 
-                frontrightDrive.setPower(power * (pivot + (-vertical + horizontal)));
-                backrightDrive.setPower(power * (pivot + (-vertical - horizontal)));
-                frontleftDrive.setPower(power * (-pivot + (-vertical - horizontal)));
-                backleftDrive.setPower(power * (-pivot + (-vertical + horizontal)));
+            driveTurn = gamepad1.right_stick_x;
+            gamepadXCoordinate = gamepad1.left_stick_x;
+            gamepadYCoordinate = -gamepad1.left_stick_y;
 
+            gamepadHypot = Range.clip(Math.hypot(gamepadXCoordinate, gamepadYCoordinate), 0, 1);
+            gamepadDegree = Math.atan2(gamepadYCoordinate, gamepadXCoordinate);
 
-            } else if (fieldCentric) {
-                robotDegree = getAngle();
+            movementDegree = gamepadDegree - robotDegree;
 
-                driveTurn = gamepad1.right_stick_x;
-                gamepadXCoordinate = gamepad1.left_stick_x;
-                gamepadYCoordinate = -gamepad1.left_stick_y;
+            gamepadXControl = Math.cos(movementDegree) * gamepadHypot;
+            gamepadYControl = Math.sin(movementDegree) * gamepadHypot;
 
-                gamepadHypot = Range.clip(Math.hypot(gamepadXCoordinate, gamepadYCoordinate), 0, 1);
-                gamepadDegree = Math.atan2(gamepadYCoordinate, gamepadXCoordinate);
+            frontrightDrive.setPower(power * (driveTurn + (-gamepadYControl + gamepadXControl)));
+            backrightDrive.setPower(power * (driveTurn + (-gamepadYControl - gamepadXControl)));
+            frontleftDrive.setPower(power * (-driveTurn + (-gamepadYControl - gamepadXControl)));
+            backleftDrive.setPower(power * (-driveTurn + (-gamepadYControl + gamepadXControl)));
 
-                movementDegree = gamepadDegree - robotDegree;
-
-                gamepadXControl = Math.cos(movementDegree) * gamepadHypot;
-                gamepadYControl = Math.sin(movementDegree) * gamepadHypot;
-
-                frontrightDrive.setPower(power * (driveTurn + (-gamepadYControl + gamepadXControl)));
-                backrightDrive.setPower(power * (driveTurn + (-gamepadYControl - gamepadXControl)));
-                frontleftDrive.setPower(power * (-driveTurn + (-gamepadYControl - gamepadXControl)));
-                backleftDrive.setPower(power * (-driveTurn + (-gamepadYControl + gamepadXControl)));
-
-                if (lBPress1 && rBPress1) {
-                    imu.resetYaw();
-                }
+            if (lBPress1 && rBPress1) {
+                imu.resetYaw();
             }
+
+
 
 
         // Telemetry
         telemetry.addData("Run Time", runtime.toString());
-        telemetry.addData("Front Right Encoder", frontrightDrive.getCurrentPosition());
-        telemetry.addData("Front Left Encoder", frontleftDrive.getCurrentPosition());
-        telemetry.addData("Back Right Encoder", backrightDrive.getCurrentPosition());
-        telemetry.addData("Back Left Encoder", backleftDrive.getCurrentPosition());
-        telemetry.addData("frontright", (power * (driveTurn + (-gamepadYControl + gamepadXControl))));
-        telemetry.addData("backright", (power * (driveTurn + (-gamepadYControl - gamepadXControl))));
-        telemetry.addData("frontleft", (power * (-driveTurn + (-gamepadYControl - gamepadXControl))));
-        telemetry.addData("backleft", (power * (-driveTurn + (-gamepadYControl + gamepadXControl))));
-        telemetry.addData("Middle Slides Encoder", middleslideDrive.getCurrentPosition());
-        telemetry.addData("IMU Z Angle", imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
-        telemetry.addData("robo degree", robotDegree);
-        telemetry.addData("X", gamepadXControl);
-        telemetry.addData("Y", gamepadYControl);
-        telemetry.addData("Turn", driveTurn);
-        telemetry.addData("Gamepad", gamepadDegree);
-        telemetry.addData("Robo", robotDegree);
+        telemetry.addData("Distance Sensor", distanceSensor.getDistance(DistanceUnit.CM));
+        telemetry.addData("gamepadXControl", gamepadXControl);
+        telemetry.addData("gamepadYControl", gamepadYControl);
         telemetry.update();
     }
 }

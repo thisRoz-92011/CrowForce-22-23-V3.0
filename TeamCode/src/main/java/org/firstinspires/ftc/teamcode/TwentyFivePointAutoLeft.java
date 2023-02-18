@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -28,7 +29,6 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
 
     private final ElapsedTime runtime = new ElapsedTime();
     public DcMotor middleslideDrive = null;
-    private boolean hasRun = false;
     public DcMotor frontleftDrive = null;
     public DcMotor frontrightDrive = null;
     public DcMotor backleftDrive = null;
@@ -53,12 +53,11 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
 
     // UNITS ARE METERS
     double tagSize = 0.166;
+    int ID_TAG_OF_INTEREST1 = 1; // Tag ID 18 from the 36h11 family
+    int ID_TAG_OF_INTEREST2 = 2;
+    int ID_TAG_OF_INTEREST3 = 3;
 
     int tagPosition = 0;
-
-    int tagOfInterest1 = 1; // Tag ID 1 from the 36h11 family
-    int tagOfInterest2 = 2; // Tag ID 2 from the 36h11 family
-    int tagOfInterest3 = 3; // Tag ID 3 from the 36h11 family
     public IMU imu;
 
     AprilTagDetection tagOfInterest = null;
@@ -130,45 +129,27 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         Pose2d startPose = new Pose2d(-36, -63, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
 
-
-
-        TrajectorySequence GeneralMovement = drive.trajectorySequenceBuilder(startPose)
-                .addTemporalMarker(3, () -> {
-                    setSliderUp(1,7,250);
-                })
-                .addDisplacementMarker(() -> {
-                    setServo(1,500);
-                })
-
-                .lineTo(new Vector2d(-36,-36))
-
-                .lineTo(new Vector2d(0,-33))
-
-                //.lineTo(new Vector2d(0,-30))
-                .addDisplacementMarker(() -> {
-                    setSliderUp(1,4,250);
-                    setServo(0,500);
-                    moveSimple(-.5,0.08);
-                    setSliderDown(.5,0,500);
-                })
-                .waitSeconds(1)
-                .lineTo(new Vector2d(-12,-36))
+        TrajectorySequence generalMovement = drive.trajectorySequenceBuilder(startPose) //Lines Up To Pole
+                .lineTo(new Vector2d(-36, -38))
+                .lineTo(new Vector2d(0, -38))
                 .build();
 
 
-
-        TrajectorySequence Tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(-36,-36,Math.toRadians(90)))
-                .lineTo(new Vector2d(-60,-36))
+        TrajectorySequence tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -38, Math.toRadians(90)))
+                .lineTo(new Vector2d(-60, -38))
                 .build();
 
-        TrajectorySequence Tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(-36,-36,Math.toRadians(90)))
-                .lineTo(new Vector2d(-12,-36))
+        TrajectorySequence tag2Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -38, Math.toRadians(90)))
+                .lineTo(new Vector2d(-36, -38))
                 .build();
 
-        TrajectorySequence Tag2Ending = drive.trajectorySequenceBuilder(new Pose2d(-36,-36,Math.toRadians(90)))
-                .lineTo(new Vector2d(-12,-36))
-                .lineTo(new Vector2d(-36,-36))
+        TrajectorySequence tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -38, Math.toRadians(90)))
+                .lineTo(new Vector2d(-12, -38))
                 .build();
+        TrajectorySequence failedAprilTag = drive.trajectorySequenceBuilder(new Pose2d(-36, -63, Math.toRadians(90)))
+                .lineTo(new Vector2d(-36, -38))
+                .build();
+
 
         while (!isStarted() && !isStopRequested()) {
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
@@ -177,74 +158,105 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
                 boolean tagFound = false;
 
                 for (AprilTagDetection tag : currentDetections) {
-                    if (tag.id == tagOfInterest1) {
-                        tagOfInterest = tag;
-                        tagFound = true;
+                    if (tag.id == ID_TAG_OF_INTEREST1) {
                         tagPosition = 1;
-                        break;
-                    }
-
-                    if (tag.id == tagOfInterest2) {
                         tagOfInterest = tag;
                         tagFound = true;
+                        break;
+                    }
+                    if (tag.id == ID_TAG_OF_INTEREST2) {
                         tagPosition = 2;
-                        break;
-                    }
-
-                    if (tag.id == tagOfInterest3) {
                         tagOfInterest = tag;
                         tagFound = true;
+                        break;
+                    }
+                    if (tag.id == ID_TAG_OF_INTEREST3) {
                         tagPosition = 3;
+                        tagOfInterest = tag;
+                        tagFound = true;
                         break;
                     }
                 }
 
                 if (tagFound) {
-                    telemetry.addLine("Tag of interest is in sight at Position " + tagPosition);
-                    imu.resetYaw();
+                    telemetry.addLine("Tag of interest is in sight!\n\nLocation data:");
+                    tagToTelemetry(tagOfInterest);
                 } else {
                     telemetry.addLine("Don't see tag of interest :(");
+
+                    if (tagOfInterest == null) {
+                        telemetry.addLine("(The tag has never been seen)");
+                    } else {
+                        telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
+                        tagToTelemetry(tagOfInterest);
+                    }
                 }
+
+            } else {
+                telemetry.addLine("Don't see tag of interest :(");
+
+                if (tagOfInterest == null) {
+                    telemetry.addLine("(The tag has never been seen)");
+                } else {
+                    telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
+                    tagToTelemetry(tagOfInterest);
+                }
+
             }
+
             telemetry.update();
-            sleep(20);  // is required or else system will break
+            sleep(20);
         }
 
+        /*
+         * The START command just came in: now work off the latest snapshot acquired
+         * during the init loop.
+         */
+
+        /* Update the telemetry */
         if (tagOfInterest != null) {
-            telemetry.addLine("Tag was seen at position " + tagPosition);
-            telemetry.addLine("Executing plan " + tagPosition);
+            telemetry.addLine("Tag snapshot:\n");
+            tagToTelemetry(tagOfInterest);
             telemetry.update();
+        } else {
+            telemetry.addLine("No tag snapshot available, it was never sighted during the init loop :(");
+            telemetry.update();
+        }
 
-            if (tagPosition == 1) {
-                middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
-                drive.followTrajectorySequence(GeneralMovement);
+        /* Actually do something useful */
+        if (tagOfInterest == null) {
 
-                drive.followTrajectorySequence(Tag1Ending);
-
-            }
-
-            if (tagPosition == 2) {
-                middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
-                drive.followTrajectorySequence(GeneralMovement);
-                drive.followTrajectorySequence(Tag2Ending);
-
-            }
-
-            if (tagPosition == 3) {
-                middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
-                drive.followTrajectorySequence(GeneralMovement);
-                drive.followTrajectorySequence(Tag3Ending);
-
-            }
+            drive.followTrajectorySequence(tag2Ending);
 
         } else {
-            telemetry.addLine("No tag available, it was never seen during the init loop :(");
-            telemetry.addLine("Backup plan INITIATED :)");
-            while (!hasRun) {
-                setServo(0, 500);
+            /*
+             * Insert your autonomous code here, probably using the tag pose to decide your configuration.
+             */
+
+            if (tagPosition == 1) {
+                drive.followTrajectorySequence(generalMovement);
+                placeCone();
+                drive.followTrajectorySequence(tag1Ending);
+            } else if (tagPosition == 2) {
+                drive.followTrajectorySequence(generalMovement);
+                placeCone();
+                drive.followTrajectorySequence(tag2Ending);
+            } else if (tagPosition == 3) {
+                drive.followTrajectorySequence(generalMovement);
+                placeCone();
+                drive.followTrajectorySequence(tag3Ending);
             }
-            telemetry.update();
         }
+    }
+    void tagToTelemetry(AprilTagDetection detection)
+    {
+        telemetry.addLine(String.format("\nDetected tag ID=%d", detection.id));
+        telemetry.addLine(String.format("Translation X: %.2f feet", detection.pose.x*FEET_PER_METER));
+        telemetry.addLine(String.format("Translation Y: %.2f feet", detection.pose.y*FEET_PER_METER));
+        telemetry.addLine(String.format("Translation Z: %.2f feet", detection.pose.z*FEET_PER_METER));
+        telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", Math.toDegrees(detection.pose.yaw)));
+        telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
+        telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
     }
 
     public void setServo(double position, int sleep) {
@@ -266,6 +278,7 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         sleep(sleep);
 
     }
+
     public void setSliderUp(double speed, double level,int sleep) {
         middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
         boolean finished = false;
@@ -313,6 +326,101 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         sleep(sleep);
     }
 
+    public void placeCone() {
+        setSliderDown(.5,0,500);
+        moveSimpleEncoder(.5,100,1,100);
+        setServo(0,500);
+        setSliderDown(.5,0,500);
+        moveSimpleEncoder(.5,100,3,100);
+
+    }
+    public void moveSimpleEncoder(double speed, int distance, int direction, int sleep) {
+
+        frontleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        if (direction == 1) {
+            frontleftDrive.setTargetPosition(distance);
+            frontrightDrive.setTargetPosition(distance);
+            backleftDrive.setTargetPosition(distance);
+            backrightDrive.setTargetPosition(distance);
+
+            frontleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            frontleftDrive.setPower(speed);
+            frontrightDrive.setPower(speed);
+            backleftDrive.setPower(speed);
+            backrightDrive.setPower(speed);
+        }
+        if (direction == 2) {
+            frontleftDrive.setTargetPosition(-distance);
+            frontrightDrive.setTargetPosition(distance);
+            backleftDrive.setTargetPosition(distance);
+            backrightDrive.setTargetPosition(-distance);
+
+            frontleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            frontleftDrive.setPower(-speed);
+            frontrightDrive.setPower(speed);
+            backleftDrive.setPower(speed);
+            backrightDrive.setPower(-speed);
+        }
+        if (direction == 3) {
+            frontleftDrive.setTargetPosition(-distance);
+            frontrightDrive.setTargetPosition(-distance);
+            backleftDrive.setTargetPosition(-distance);
+            backrightDrive.setTargetPosition(-distance);
+
+            frontleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            frontleftDrive.setPower(-speed);
+            frontrightDrive.setPower(-speed);
+            backleftDrive.setPower(-speed);
+            backrightDrive.setPower(-speed);
+        }
+        if (direction == 4) {
+            frontleftDrive.setTargetPosition(distance);
+            frontrightDrive.setTargetPosition(-distance);
+            backleftDrive.setTargetPosition(-distance);
+            backrightDrive.setTargetPosition(distance);
+
+            frontleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            frontleftDrive.setPower(speed);
+            frontrightDrive.setPower(-speed);
+            backleftDrive.setPower(-speed);
+            backrightDrive.setPower(speed);
+        }
+
+
+        while (frontleftDrive.isBusy() && frontrightDrive.isBusy() && backleftDrive.isBusy() && backrightDrive.isBusy()) {
+            telemetry();
+            // Wait for the motors to reach their target positions and updates telemetry
+        }
+
+        frontleftDrive.setPower(0);
+        frontrightDrive.setPower(0);
+        backleftDrive.setPower(0);
+        backrightDrive.setPower(0);
+
+        sleep(sleep);
+    }
+
+
 
     public void telemetry() {
         telemetry.addData("Run Time", runtime.toString());
@@ -322,16 +430,6 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         telemetry.addData("Back Left Encoder", backleftDrive.getCurrentPosition());
         telemetry.addData("IMU Z Angle", imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
         telemetry.update();
-    }
-    public void moveSimple (double speed, double time) {
-        time = time*1;
-        ElapsedTime movementTime = new ElapsedTime();
-        while (movementTime.time() < time) {
-            frontleftDrive.setPower(speed);
-            frontrightDrive.setPower(speed);
-            backleftDrive.setPower(speed);
-            backrightDrive.setPower(speed);
-        }
     }
 
 }
