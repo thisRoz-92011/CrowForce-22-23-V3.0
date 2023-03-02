@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name="TeleopFieldCentric", group="Linear Opmode")
+@Config
 
 public class TeleopFieldCentric extends LinearOpMode {
 
@@ -26,8 +28,7 @@ public class TeleopFieldCentric extends LinearOpMode {
     private DcMotor backleftDrive = null;
     private DcMotor backrightDrive = null;
     private DcMotor middleslideDrive = null;
-    private Servo rightgripperDrive = null;
-    private Servo leftgripperDrive = null;
+    private Servo gripperDrive = null;
 
     private DistanceSensor distanceSensor = null;
     public IMU imu;
@@ -45,8 +46,7 @@ public class TeleopFieldCentric extends LinearOpMode {
         backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
         backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         middleslideDrive= hardwareMap.get(DcMotor.class, "middle_slides_drive");
-        rightgripperDrive = hardwareMap.get(Servo.class, "right_gripper_drive");
-        leftgripperDrive = hardwareMap.get(Servo.class, "left_gripper_drive");
+        gripperDrive = hardwareMap.get(Servo.class, "gripper_drive");
         distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
 
         // Define Boolean Buttons
@@ -159,12 +159,10 @@ public class TeleopFieldCentric extends LinearOpMode {
             }
             // Controls grippers
             if (lBPress2) {
-                leftgripperDrive.setPosition(.77);
-                rightgripperDrive.setPosition(.12);
+                gripperDrive.setPosition(.77);
             }
             if (rBPress2) {
-                leftgripperDrive.setPosition(.505);
-                rightgripperDrive.setPosition(.35);
+                gripperDrive.setPosition(.505);
             }
 
             // Moves robot by using joystick position
