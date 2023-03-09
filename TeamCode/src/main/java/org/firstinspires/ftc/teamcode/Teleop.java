@@ -170,10 +170,10 @@ public class Teleop extends LinearOpMode {
             }
             // Controls grippers
             if (lBPress2) {
-                gripperDrive.setPosition(0);
+                gripperDrive.setPosition(.25);
             }
             if (rBPress2) {
-                gripperDrive.setPosition(.25);
+                gripperDrive.setPosition(0);
             }
 
             // Moves robot by using joystick position
@@ -186,7 +186,7 @@ public class Teleop extends LinearOpMode {
             if (distanceSensor.getDistance(DistanceUnit.CM) > 50) {
                 yMovement = 1;
             } else if (distanceSensor.getDistance(DistanceUnit.CM) > 20) {
-                yMovement = Range.clip((.008 * distanceSensor.getDistance(DistanceUnit.CM)),.1,1);
+                yMovement = Range.clip((.01 * distanceSensor.getDistance(DistanceUnit.CM)),.1,1);
             }
 
 
@@ -204,13 +204,9 @@ public class Teleop extends LinearOpMode {
                 gamepadDegree = Math.atan2(gamepadYCoordinate, gamepadXCoordinate);
 
                 movementDegree = gamepadDegree - robotDegree;
+                gamepadYControl = Math.sin(movementDegree) * gamepadHypot;
 
                 gamepadXControl = Math.cos(movementDegree) * gamepadHypot;
-                if (distanceSensor.getDistance(DistanceUnit.CM) < 18) {
-                    gamepadYControl = -.4;
-                } else {
-                    gamepadYControl = Math.sin(movementDegree) * gamepadHypot;
-                }
 
 
                 if (gamepadYControl > 0) {
@@ -234,6 +230,11 @@ public class Teleop extends LinearOpMode {
 
                 horizontal = gamepad1.left_stick_x;
                 pivot = gamepad1.right_stick_x;
+
+                telemetry.addData("R Front Right", (power * (pivot + (-vertical + horizontal))));
+                telemetry.addData("R Back Right", (power * (pivot + (-vertical - horizontal))));
+                telemetry.addData("R Front Left", (power * (-pivot + (-vertical - horizontal))));
+                telemetry.addData("R Back Left", (power * (-pivot + (-vertical + horizontal))));
 
                 if (-gamepad1.left_stick_y > 0) {
                     frontrightDrive.setPower(power * (pivot + ((yMovement * (-vertical)) + horizontal)));
@@ -260,6 +261,11 @@ public class Teleop extends LinearOpMode {
             telemetry.addData("gamepadXControl", gamepadXControl);
             telemetry.addData("gamepadYControl", gamepadYControl);
             telemetry.addData("middleSlides", middleslideDrive.getCurrentPosition());
+            telemetry.addData("Front Right", (power * (driveTurn + (yMovement * (-gamepadYControl)) + gamepadXControl)));
+            telemetry.addData("Back Right", (power * (driveTurn + (yMovement * (-gamepadYControl)) - gamepadXControl)));
+            telemetry.addData("Front Left", (power * (-driveTurn + (yMovement * (-gamepadYControl)) - gamepadXControl)));
+            telemetry.addData("Back Left", (power * (-driveTurn + (yMovement * (-gamepadYControl)) + gamepadXControl)));
+
 
             telemetry.update();
         }
