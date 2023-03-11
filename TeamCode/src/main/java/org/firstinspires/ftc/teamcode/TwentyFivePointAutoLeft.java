@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -11,6 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -23,8 +26,9 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import java.util.ArrayList;
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "TwentyFivePointAutoLeft", group = "OpenCV Autos" )
 
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "TwentyFivePointAutoLeft", group = "OpenCV Autos" )
+@Config
 public class TwentyFivePointAutoLeft extends LinearOpMode {
 
     private final ElapsedTime runtime = new ElapsedTime();
@@ -33,8 +37,11 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
     public DcMotor frontrightDrive = null;
     public DcMotor backleftDrive = null;
     public DcMotor backrightDrive = null;
-    public Servo rightgripperDrive = null;
-    public Servo leftgripperDrive = null;
+    public Servo gripperDrive = null;
+
+    private DistanceSensor distanceSensor;
+
+    public static double leftStrafe = -4;
 
 
     OpenCvCamera camera;
@@ -70,14 +77,14 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         backleftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
         backrightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
-
-        rightgripperDrive = hardwareMap.get(Servo.class, "right_gripper_drive");
-        leftgripperDrive = hardwareMap.get(Servo.class, "left_gripper_drive");
+        distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
+        gripperDrive = hardwareMap.get(Servo.class, "gripper_drive");
 
         frontleftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontrightDrive.setDirection(DcMotor.Direction.FORWARD);
         backleftDrive.setDirection(DcMotor.Direction.REVERSE);
         backrightDrive.setDirection(DcMotor.Direction.FORWARD);
+        middleslideDrive.setDirection(DcMotor.Direction.FORWARD);
         middleslideDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         frontleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -130,24 +137,24 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         TrajectorySequence generalMovement = drive.trajectorySequenceBuilder(startPose) //Lines Up To Pole
-                .lineTo(new Vector2d(-36, -38))
-                .lineTo(new Vector2d(0, -38))
+                .lineTo(new Vector2d(-36, -36))
+                .lineTo(new Vector2d(leftStrafe, -36))
                 .build();
 
 
-        TrajectorySequence tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -38, Math.toRadians(90)))
-                .lineTo(new Vector2d(-60, -38))
+        TrajectorySequence tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -36, Math.toRadians(90)))
+                .lineTo(new Vector2d(-60, -36))
                 .build();
 
-        TrajectorySequence tag2Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -38, Math.toRadians(90)))
-                .lineTo(new Vector2d(-36, -38))
+        TrajectorySequence tag2Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -36, Math.toRadians(90)))
+                .lineTo(new Vector2d(-36, -36))
                 .build();
 
-        TrajectorySequence tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -38, Math.toRadians(90)))
-                .lineTo(new Vector2d(-12, -38))
+        TrajectorySequence tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -36, Math.toRadians(90)))
+                .lineTo(new Vector2d(-12, -36))
                 .build();
         TrajectorySequence failedAprilTag = drive.trajectorySequenceBuilder(new Pose2d(-36, -63, Math.toRadians(90)))
-                .lineTo(new Vector2d(-36, -38))
+                .lineTo(new Vector2d(-36, -36))
                 .build();
 
 
@@ -235,16 +242,19 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
 
             if (tagPosition == 1) {
                 drive.followTrajectorySequence(generalMovement);
-                placeCone();
-                drive.followTrajectorySequence(tag1Ending);
+                //placeCone();
+                //drive.followTrajectorySequence(tag1Ending);
             } else if (tagPosition == 2) {
                 drive.followTrajectorySequence(generalMovement);
-                placeCone();
-                drive.followTrajectorySequence(tag2Ending);
+               // placeCone();
+               // drive.followTrajectorySequence(tag2Ending);
             } else if (tagPosition == 3) {
+                setServo(1,100);
                 drive.followTrajectorySequence(generalMovement);
+                horizontalDetect();
+                detectPole();
                 placeCone();
-                drive.followTrajectorySequence(tag3Ending);
+               // drive.followTrajectorySequence(tag3Ending);
             }
         }
     }
@@ -259,25 +269,26 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
     }
 
-    public void setServo(double position, int sleep) {
-        position = position * 1;
-        if (position == 1) {
-            while (leftgripperDrive.getPosition() != .505) {
-                leftgripperDrive.setPosition(.505);
-                rightgripperDrive.setPosition(.35);
-            }
-
-        }
-        if (position == 0) {
-            while (leftgripperDrive.getPosition() != .77) {
-                leftgripperDrive.setPosition(.77);
-                rightgripperDrive.setPosition(.12);
-            }
-
-        }
-        sleep(sleep);
+    public void placeCone() {
+        setSliderUp(.5,7,500);
+        moveSimpleEncoder(.5,200,1,100);
+        setServo(0,500);
+        setSliderDown(.5,0,500);
+        moveSimpleEncoder(.5,200,3,100);
 
     }
+    public void setServo(double position, int sleep) {
+        if (position == 1) {
+            gripperDrive.setPosition(0);
+            sleep(sleep);
+        }
+        if (position == 0) {
+            gripperDrive.setPosition(.25);
+            sleep(sleep);
+        }
+
+    }
+
 
     public void setSliderUp(double speed, double level,int sleep) {
         middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
@@ -290,12 +301,13 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         if (level == 4) {position = 1000;}
         if (level == 5) {position = 1700;}
         if (level == 6) {position = 2600;}
-        if (level == 7) {position = 4300;}
+        if (level == 7) {position = 4200;}
 
 
         if (middleslideDrive.getCurrentPosition() < position) {
             while (middleslideDrive.getCurrentPosition()< position) {
-                middleslideDrive.setPower(-speed);
+                middleslideDrive.setPower(speed);
+                telemetry();
             }
             telemetry();
         }
@@ -304,7 +316,6 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
     }
     public void setSliderDown(double speed, double level,int sleep) {
         middleslideDrive = hardwareMap.get(DcMotor.class, "middle_slides_drive");
-        boolean finished = false;
         double position = 0;
         if (level == 0) {position = 0;}
         if (level == 1) {position = 200;}
@@ -318,7 +329,8 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
 
         if (middleslideDrive.getCurrentPosition() > position) {
             while (middleslideDrive.getCurrentPosition()> position) {
-                middleslideDrive.setPower(speed);
+                telemetry();
+                middleslideDrive.setPower(-speed);
             }
             telemetry();
         }
@@ -326,13 +338,30 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         sleep(sleep);
     }
 
-    public void placeCone() {
-        setSliderDown(.5,0,500);
-        moveSimpleEncoder(.5,100,1,100);
-        setServo(0,500);
-        setSliderDown(.5,0,500);
-        moveSimpleEncoder(.5,100,3,100);
 
+    public void detectPole() {
+        while (distanceSensor.getDistance(DistanceUnit.CM) > 13.5) {
+            frontleftDrive.setPower(.1);
+            frontrightDrive.setPower(.1);
+            backleftDrive.setPower(.1);
+            backrightDrive.setPower(.1);
+        }
+        frontleftDrive.setPower(0);
+        frontrightDrive.setPower(0);
+        backleftDrive.setPower(.0);
+        backrightDrive.setPower(0);
+    }
+    public void horizontalDetect() {
+        while (distanceSensor.getDistance(DistanceUnit.CM) > 20.5) {
+            frontleftDrive.setPower(.1);
+            frontrightDrive.setPower(-.1);
+            backleftDrive.setPower(-.1);
+            backrightDrive.setPower(.1);
+        }
+        frontleftDrive.setPower(0);
+        frontrightDrive.setPower(0);
+        backleftDrive.setPower(0);
+        backrightDrive.setPower(0);
     }
     public void moveSimpleEncoder(double speed, int distance, int direction, int sleep) {
 
@@ -428,8 +457,11 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         telemetry.addData("Front Left Encoder", frontleftDrive.getCurrentPosition());
         telemetry.addData("Back Right Encoder", backrightDrive.getCurrentPosition());
         telemetry.addData("Back Left Encoder", backleftDrive.getCurrentPosition());
+        telemetry.addData("middleSlides Encoder", middleslideDrive.getCurrentPosition());
+        telemetry.addData("middleSlides IsBusy", middleslideDrive.isBusy());
         telemetry.addData("IMU Z Angle", imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
         telemetry.update();
     }
+
 
 }

@@ -18,7 +18,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name="Teleop", group="Linear Opmode")
-@Config
 
 public class Teleop extends LinearOpMode {
 
@@ -222,12 +221,9 @@ public class Teleop extends LinearOpMode {
                 }
 
             } else {
-                if (distanceSensor.getDistance(DistanceUnit.CM) < 18) {
-                    vertical = -.4;
-                } else {
-                    vertical = -gamepad1.left_stick_y;
-                }
 
+
+                vertical = -gamepad1.left_stick_y;
                 horizontal = gamepad1.left_stick_x;
                 pivot = gamepad1.right_stick_x;
 
