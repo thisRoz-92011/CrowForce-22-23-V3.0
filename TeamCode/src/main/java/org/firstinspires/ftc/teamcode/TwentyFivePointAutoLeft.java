@@ -138,9 +138,24 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
 
         TrajectorySequence generalMovement = drive.trajectorySequenceBuilder(startPose) //Lines Up To Pole
                 .lineTo(new Vector2d(-36, -36))
-                .lineTo(new Vector2d(leftStrafe, -36))
+                .lineTo(new Vector2d(-4, -36))
+                .addTemporalMarker(10, () -> {
+                    horizontalDetect();
+                    detectPole();
+                    placeCone();
+                })
                 .build();
-
+        TrajectorySequence tag3Whole = drive.trajectorySequenceBuilder(startPose) //Lines Up To Pole
+                .lineTo(new Vector2d(-36, -36))
+                .lineTo(new Vector2d(-4, -36))
+                .addTemporalMarker(5, () -> {
+                    horizontalDetect();
+                    detectPole();
+                    placeCone();
+                })
+                .waitSeconds(5)
+                .lineTo(new Vector2d(-12,-36))
+                .build();
 
         TrajectorySequence tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -36, Math.toRadians(90)))
                 .lineTo(new Vector2d(-60, -36))
@@ -153,6 +168,7 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         TrajectorySequence tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -36, Math.toRadians(90)))
                 .lineTo(new Vector2d(-12, -36))
                 .build();
+
         TrajectorySequence failedAprilTag = drive.trajectorySequenceBuilder(new Pose2d(-36, -63, Math.toRadians(90)))
                 .lineTo(new Vector2d(-36, -36))
                 .build();
@@ -250,11 +266,9 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
                // drive.followTrajectorySequence(tag2Ending);
             } else if (tagPosition == 3) {
                 setServo(1,100);
-                drive.followTrajectorySequence(generalMovement);
-                horizontalDetect();
-                detectPole();
-                placeCone();
-               // drive.followTrajectorySequence(tag3Ending);
+                drive.followTrajectorySequence(tag3Whole);
+                //drive.followTrajectorySequence(generalMovement);
+                //drive.followTrajectorySequence(tag3Ending);
             }
         }
     }
@@ -352,7 +366,7 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         backrightDrive.setPower(0);
     }
     public void horizontalDetect() {
-        while (distanceSensor.getDistance(DistanceUnit.CM) > 20.5) {
+        while (distanceSensor.getDistance(DistanceUnit.CM) > 18) {
             frontleftDrive.setPower(.1);
             frontrightDrive.setPower(-.1);
             backleftDrive.setPower(-.1);
