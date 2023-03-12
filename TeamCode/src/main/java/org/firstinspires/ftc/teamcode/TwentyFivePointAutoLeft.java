@@ -136,7 +136,7 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         Pose2d startPose = new Pose2d(-36, -63, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
 
-        TrajectorySequence generalMovement = drive.trajectorySequenceBuilder(startPose) //Lines Up To Pole
+        TrajectorySequence allMovement = drive.trajectorySequenceBuilder(startPose) //Lines Up To Pole
                 .lineTo(new Vector2d(-36, -36))
                 .lineTo(new Vector2d(-1, -36))
                 .waitSeconds(.25)
@@ -146,27 +146,13 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
                     placeCone();
                     int parkDistance = 0;
                     if (tagPosition == 3) {parkDistance = 1250;}
-                    if (tagPosition == 2) {parkDistance = 3250;}
-                    if (tagPosition == 1) {parkDistance = 5250;}
-                    moveSimpleEncoder(1,parkDistance,2,250);
+                    if (tagPosition == 2) {parkDistance = 4000;}
+                    if (tagPosition == 1) {parkDistance = 6300;}
+                    moveSimpleEncoder(.5, parkDistance,2,250);
                 })
-
-
                 .build();
 
-        TrajectorySequence tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -36, Math.toRadians(90)))
-                .lineTo(new Vector2d(-60, -36))
-                .build();
-
-        TrajectorySequence tag2Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -36, Math.toRadians(90)))
-                .lineTo(new Vector2d(-36, -36))
-                .build();
-
-        TrajectorySequence tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -36, Math.toRadians(90)))
-                .strafeLeft(12)
-                .build();
-
-        TrajectorySequence failedAprilTag = drive.trajectorySequenceBuilder(new Pose2d(-36, -63, Math.toRadians(90)))
+        TrajectorySequence failedAprilTag = drive.trajectorySequenceBuilder(startPose)
                 .lineTo(new Vector2d(-36, -36))
                 .build();
 
@@ -246,7 +232,7 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         /* Actually do something useful */
         if (tagOfInterest == null) {
 
-            drive.followTrajectorySequence(tag2Ending);
+            drive.followTrajectorySequence(failedAprilTag);
 
         } else {
             /*
@@ -254,31 +240,23 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
              */
 
             if (tagPosition == 1) {
-                drive.followTrajectorySequence(generalMovement);
-                //placeCone();
-                //drive.followTrajectorySequence(tag1Ending);
-            } else if (tagPosition == 2) {
-                drive.followTrajectorySequence(generalMovement);
-               // placeCone();
-               // drive.followTrajectorySequence(tag2Ending);
-            } else if (tagPosition == 3) {
+
                 setServo(1,100);
-                drive.followTrajectorySequence(generalMovement);
+                drive.followTrajectorySequence(allMovement);
+
+            } else if (tagPosition == 2) {
+
+                setServo(1,100);
+                drive.followTrajectorySequence(allMovement);
+
+            } else if (tagPosition == 3) {
+
+                setServo(1,100);
+                drive.followTrajectorySequence(allMovement);
 
             }
         }
     }
-    void tagToTelemetry(AprilTagDetection detection)
-    {
-        telemetry.addLine(String.format("\nDetected tag ID=%d", detection.id));
-        telemetry.addLine(String.format("Translation X: %.2f feet", detection.pose.x*FEET_PER_METER));
-        telemetry.addLine(String.format("Translation Y: %.2f feet", detection.pose.y*FEET_PER_METER));
-        telemetry.addLine(String.format("Translation Z: %.2f feet", detection.pose.z*FEET_PER_METER));
-        telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", Math.toDegrees(detection.pose.yaw)));
-        telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
-        telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
-    }
-
     public void placeCone() {
         setSliderUp(.5,7,500);
         moveSimpleEncoder(.25,200,1,100);
@@ -472,9 +450,6 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
 
         sleep(sleep);
     }
-
-
-
     public void telemetry() {
         telemetry.addData("Run Time", runtime.toString());
         telemetry.addData("Front Right Encoder", frontrightDrive.getCurrentPosition());
@@ -485,6 +460,17 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         telemetry.addData("middleSlides IsBusy", middleslideDrive.isBusy());
         telemetry.addData("IMU Z Angle", imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
         telemetry.update();
+    }
+
+    void tagToTelemetry(AprilTagDetection detection)
+    {
+        telemetry.addLine(String.format("\nDetected tag ID=%d", detection.id));
+        telemetry.addLine(String.format("Translation X: %.2f feet", detection.pose.x*FEET_PER_METER));
+        telemetry.addLine(String.format("Translation Y: %.2f feet", detection.pose.y*FEET_PER_METER));
+        telemetry.addLine(String.format("Translation Z: %.2f feet", detection.pose.z*FEET_PER_METER));
+        telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", Math.toDegrees(detection.pose.yaw)));
+        telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
+        telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
     }
 
 
