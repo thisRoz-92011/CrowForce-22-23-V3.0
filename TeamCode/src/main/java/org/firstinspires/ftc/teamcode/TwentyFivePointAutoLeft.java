@@ -138,23 +138,20 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
 
         TrajectorySequence generalMovement = drive.trajectorySequenceBuilder(startPose) //Lines Up To Pole
                 .lineTo(new Vector2d(-36, -36))
-                .lineTo(new Vector2d(-4, -36))
+                .lineTo(new Vector2d(-1, -36))
+                .waitSeconds(.25)
                 .addTemporalMarker(10, () -> {
-                    horizontalDetect();
+                    //horizontalDetect();
                     detectPole();
                     placeCone();
+                    int parkDistance = 0;
+                    if (tagPosition == 3) {parkDistance = 1250;}
+                    if (tagPosition == 2) {parkDistance = 3250;}
+                    if (tagPosition == 1) {parkDistance = 5250;}
+                    moveSimpleEncoder(1,parkDistance,2,250);
                 })
-                .build();
-        TrajectorySequence tag3Whole = drive.trajectorySequenceBuilder(startPose) //Lines Up To Pole
-                .lineTo(new Vector2d(-36, -36))
-                .lineTo(new Vector2d(-4, -36))
-                .addTemporalMarker(5, () -> {
-                    horizontalDetect();
-                    detectPole();
-                    placeCone();
-                })
-                .waitSeconds(5)
-                .lineTo(new Vector2d(-12,-36))
+
+
                 .build();
 
         TrajectorySequence tag1Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -36, Math.toRadians(90)))
@@ -166,7 +163,7 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
                 .build();
 
         TrajectorySequence tag3Ending = drive.trajectorySequenceBuilder(new Pose2d(0, -36, Math.toRadians(90)))
-                .lineTo(new Vector2d(-12, -36))
+                .strafeLeft(12)
                 .build();
 
         TrajectorySequence failedAprilTag = drive.trajectorySequenceBuilder(new Pose2d(-36, -63, Math.toRadians(90)))
@@ -266,9 +263,8 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
                // drive.followTrajectorySequence(tag2Ending);
             } else if (tagPosition == 3) {
                 setServo(1,100);
-                drive.followTrajectorySequence(tag3Whole);
-                //drive.followTrajectorySequence(generalMovement);
-                //drive.followTrajectorySequence(tag3Ending);
+                drive.followTrajectorySequence(generalMovement);
+
             }
         }
     }
@@ -285,11 +281,11 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
 
     public void placeCone() {
         setSliderUp(.5,7,500);
-        moveSimpleEncoder(.5,200,1,100);
+        moveSimpleEncoder(.25,200,1,100);
         setServo(0,500);
         setSliderDown(.5,0,500);
-        moveSimpleEncoder(.5,200,3,100);
-
+        moveSimpleEncoder(.25,200,3,100);
+        sleep(250);
     }
     public void setServo(double position, int sleep) {
         if (position == 1) {
@@ -354,7 +350,7 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
 
 
     public void detectPole() {
-        while (distanceSensor.getDistance(DistanceUnit.CM) > 13.5) {
+        while (distanceSensor.getDistance(DistanceUnit.CM) > 13) {
             frontleftDrive.setPower(.1);
             frontrightDrive.setPower(.1);
             backleftDrive.setPower(.1);
@@ -364,18 +360,32 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         frontrightDrive.setPower(0);
         backleftDrive.setPower(.0);
         backrightDrive.setPower(0);
+        sleep(250);
     }
     public void horizontalDetect() {
-        while (distanceSensor.getDistance(DistanceUnit.CM) > 18) {
-            frontleftDrive.setPower(.1);
-            frontrightDrive.setPower(-.1);
-            backleftDrive.setPower(-.1);
-            backrightDrive.setPower(.1);
+        while (distanceSensor.getDistance(DistanceUnit.CM) > 15.15) {
+            frontleftDrive.setPower(.15);
+            frontrightDrive.setPower(-.15);
+            backleftDrive.setPower(-.15);
+            backrightDrive.setPower(.15);
         }
         frontleftDrive.setPower(0);
         frontrightDrive.setPower(0);
         backleftDrive.setPower(0);
         backrightDrive.setPower(0);
+        /*if (distanceSensor.getDistance(DistanceUnit.CM) > 17.6 || distanceSensor.getDistance(DistanceUnit.CM) <17.4)
+        {
+
+            while (distanceSensor.getDistance(DistanceUnit.CM) > 17.6 || distanceSensor.getDistance(DistanceUnit.CM) <17.4)
+            {
+                double initialDistance = distanceSensor.getDistance(DistanceUnit.CM);
+                double errorTime =
+
+
+            }
+        }
+        */
+        sleep(250);
     }
     public void moveSimpleEncoder(double speed, int distance, int direction, int sleep) {
 
@@ -411,10 +421,10 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
             backleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            frontleftDrive.setPower(-speed);
-            frontrightDrive.setPower(speed);
-            backleftDrive.setPower(speed);
-            backrightDrive.setPower(-speed);
+            frontleftDrive.setPower(speed);
+            frontrightDrive.setPower(-speed);
+            backleftDrive.setPower(-speed);
+            backrightDrive.setPower(speed);
         }
         if (direction == 3) {
             frontleftDrive.setTargetPosition(-distance);
@@ -443,10 +453,10 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
             backleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            frontleftDrive.setPower(speed);
-            frontrightDrive.setPower(-speed);
-            backleftDrive.setPower(-speed);
-            backrightDrive.setPower(speed);
+            frontleftDrive.setPower(-speed);
+            frontrightDrive.setPower(speed);
+            backleftDrive.setPower(speed);
+            backrightDrive.setPower(-speed);
         }
 
 
