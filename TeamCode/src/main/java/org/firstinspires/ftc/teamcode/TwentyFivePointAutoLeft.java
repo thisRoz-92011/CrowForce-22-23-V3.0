@@ -472,6 +472,38 @@ public class TwentyFivePointAutoLeft extends LinearOpMode {
         telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
         telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
     }
+    void adjustPosition(int positionNumber, double desiredAngle) {
+        // Take current pose and have robot move to desired pose for start of new auto.
+        // read sensors:
+        double currentAngle = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle;;
+        double x_distance;
+        double y_distance;
+        double speed = 1;
+        //define position number values
+        if (positionNumber == 1) {
+            double desiredX;
+            double desiredY;
+        }
+        //Use IMU to adjust angle:
+        while (currentAngle != desiredAngle) {
+            //Adjust speed to percent of turn:
+            if (currentAngle < desiredAngle) {
+                frontleftDrive.setPower(speed);
+                backleftDrive.setPower(speed);
+                frontrightDrive.setPower(-speed);
+                backrightDrive.setPower(-speed);
+
+            }
+            if (currentAngle > desiredAngle) {
+                frontleftDrive.setPower(-speed);
+                backleftDrive.setPower(-speed);
+                frontrightDrive.setPower(speed);
+                backrightDrive.setPower(speed);
+            }
+        }
+        //strafe to x&y position:
+        //
+    }
 
 
 }
